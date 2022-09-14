@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'io.quarkus'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/integrationtest/java'
+        }
+        resources {
+            srcDir 'src/integrationtest/resources'
+        }
+
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+configurations {
+    cucumberTestRuntime.extendsFrom(testImplementation)
+    integrationTestImplementation.extendsFrom(testImplementation)
+    integrationTestCompile.extendsFrom(testCompile)
+    integrationTestRuntime.extendsFrom(testRuntime)
+}
+
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-arc'
+    testImplementation 'io.quarkus:quarkus-junit5'
+
+    integrationTestImplementation 'io.quarkiverse.cucumber:quarkus-cucumber:0.6.0'
+}
+
+group 'com.example'
+version '1.0.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+
+processIntegrationTestResources{
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
+
+task runComponentTest(type: JavaExec){
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    mainClass = 'com.example.CucumberTestRunner'
+}
